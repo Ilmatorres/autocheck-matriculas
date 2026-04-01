@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoCheck Pro - Leitura de Matriculas</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f1117;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ffffff10;
+    }
+    .logo { font-size: 1.4rem; font-weight: 700; color: #fff; }
+    .logo span { color: #00d4aa; }
+    .header-nav { display: flex; gap: 8px; }
+    .nav-btn {
+      padding: 8px 18px; border: 1px solid #ffffff15; border-radius: 10px;
+      background: transparent; color: #aaa; font-size: 0.85rem; cursor: pointer; transition: all 0.3s;
+    }
+    .nav-btn:hover, .nav-btn.active { background: #00d4aa; color: #0f1117; border-color: #00d4aa; }
+
+    .main { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+
+    /* Matricula Search */
+    .search-section {
+      background: linear-gradient(135deg, #1a1a2e, #1e2a45);
+      border: 1px solid #ffffff10; border-radius: 20px; padding: 40px; text-align: center; margin-bottom: 30px;
+    }
+    .search-title { font-size: 1.6rem; font-weight: 300; margin-bottom: 6px; }
+    .search-title span { color: #00d4aa; }
+    .search-sub { color: #ffffff44; font-size: 0.9rem; margin-bottom: 25px; }
+
+    .matricula-input-wrap {
+      display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;
+    }
+    .matricula-input {
+      padding: 16px 24px; font-size: 1.8rem; font-weight: 700; letter-spacing: 6px;
+      text-transform: uppercase; text-align: center; width: 300px;
+      background: #0f1117; border: 2px solid #00d4aa44; border-radius: 14px; color: #fff; outline: none;
+      transition: border-color 0.3s;
+    }
+    .matricula-input::placeholder { font-size: 0.9rem; letter-spacing: 1px; color: #ffffff33; font-weight: 400; }
+    .matricula-input:focus { border-color: #00d4aa; }
+    .btn-search {
+      padding: 16px 32px; background: linear-gradient(135deg, #00d4aa, #00a885); border: none;
+      border-radius: 14px; color: #0f1117; font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: all 0.3s; white-space: nowrap;
+    }
+    .btn-search:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,212,170,0.3); }
+
+    .camera-hint { margin-top: 15px; color: #ffffff33; font-size: 0.8rem; }
+
+    /* Stats */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px; margin-bottom: 30px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.04); border: 1px solid #ffffff10; border-radius: 16px;
+      padding: 20px; text-align: center; transition: all 0.3s;
+    }
+    .stat-card:hover { border-color: #00d4aa44; transform: translateY(-2px); }
+    .stat-value { font-size: 2rem; font-weight: 700; color: #00d4aa; }
+    .stat-label { font-size: 0.75rem; color: #ffffff55; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+    /* Result Panel */
+    .result-panel { display: none; margin-top: 25px; }
+    .result-panel.show { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Vehicle Card */
+    .vehicle-card {
+      background: rgba(255,255,255,0.04); border: 1px solid #ffffff10; border-radius: 18px;
+      padding: 25px; margin-bottom: 20px;
+    }
+    .vehicle-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .vehicle-plate {
+      background: #ffd700; color: #000; font-size: 1.4rem; font-weight: 800; letter-spacing: 4px;
+      padding: 10px 24px; border-radius: 8px; border: 2px solid #333;
+    }
+    .vehicle-info h3 { color: #fff; font-size: 1.2rem; }
+    .vehicle-info p { color: #ffffff55; font-size: 0.85rem; margin-top: 3px; }
+    .vehicle-detail {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px; margin-top: 18px; padding-top: 18px; border-top: 1px solid #ffffff10;
+    }
+    .detail-item label { font-size: 0.7rem; color: #ffffff44; text-transform: uppercase; letter-spacing: 1px; }
+    .detail-item p { font-size: 0.95rem; color: #fff; margin-top: 2px; }
+
+    /* Client Card */
+    .client-card {
+      background: rgba(0,212,170,0.06); border: 1px solid #00d4aa22; border-radius: 16px;
+      padding: 20px; margin-bottom: 20px;
+    }
+    .client-card h4 { color: #00d4aa; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+    .client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .client-grid p { font-size: 0.9rem; }
+    .client-grid span { color: #ffffff55; font-size: 0.8rem; }
+
+    /* Alerts */
+    .alerts-section { margin-bottom: 20px; }
+    .alerts-section h4 { color: #fff; margin-bottom: 12px; font-size: 1rem; }
+    .alert-item {
+      padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 10px;
+    }
+    .alert-item.urgente { background: rgba(255,77,77,0.12); border: 1px solid rgba(255,77,77,0.3); color: #ff6b6b; }
+    .alert-item.atencao { background: rgba(255,193,7,0.12); border: 1px solid rgba(255,193,7,0.3); color: #ffc107; }
+    .alert-item.info { background: rgba(0,148,255,0.12); border: 1px solid rgba(0,148,255,0.3); color: #42a5f5; }
+    .alert-icon { font-size: 1.2rem; flex-shrink: 0; }
+
+    /* History Table */
+    .history-section { margin-bottom: 20px; }
+    .history-section h4 { color: #fff; margin-bottom: 12px; font-size: 1rem; }
+    .history-table { width: 100%; border-collapse: collapse; }
+    .history-table th {
+      text-align: left; padding: 10px 14px; font-size: 0.75rem; color: #ffffff44;
+      text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ffffff10;
+    }
+    .history-table td { padding: 12px 14px; font-size: 0.85rem; border-bottom: 1px solid #ffffff08; }
+    .history-table tr:hover { background: rgba(255,255,255,0.03); }
+    .badge {
+      padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+    }
+    .badge.concluido { background: rgba(0,212,170,0.15); color: #00d4aa; }
+    .badge.pendente { background: rgba(255,193,7,0.15); color: #ffc107; }
+    .badge.pago { background: rgba(0,212,170,0.15); color: #00d4aa; }
+    .badge.nao-pago { background: rgba(255,77,77,0.15); color: #ff6b6b; }
+
+    /* Insights */
+    .insights-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px; margin-bottom: 20px;
+    }
+    .insight-card {
+      background: rgba(124,92,252,0.08); border: 1px solid rgba(124,92,252,0.2);
+      border-radius: 14px; padding: 18px; text-align: center;
+    }
+    .insight-value { font-size: 1.5rem; font-weight: 700; color: #b8a4ff; }
+    .insight-label { font-size: 0.7rem; color: #ffffff44; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+    /* Not Found */
+    .not-found {
+      text-align: center; padding: 40px; background: rgba(255,77,77,0.06);
+      border: 1px solid rgba(255,77,77,0.2); border-radius: 16px; margin-top: 20px;
+    }
+    .not-found h3 { color: #ff6b6b; margin-bottom: 8px; }
+    .not-found p { color: #ffffff55; font-size: 0.9rem; }
+    .btn-register {
+      margin-top: 15px; padding: 12px 24px; background: #00d4aa; border: none; border-radius: 12px;
+      color: #0f1117; font-weight: 600; cursor: pointer; transition: all 0.3s;
+    }
+    .btn-register:hover { transform: translateY(-2px); }
+
+    /* Alerts Dashboard */
+    .dashboard-alerts { margin-top: 30px; }
+    .dashboard-alerts h3 { color: #fff; margin-bottom: 15px; font-size: 1.1rem; }
+
+    /* Sections */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .matricula-input { font-size: 1.3rem; width: 100%; }
+      .header { flex-direction: column; gap: 12px; }
+      .client-grid { grid-template-columns: 1fr; }
+      .history-table { font-size: 0.75rem; }
+      .history-table th, .history-table td { padding: 8px; }
+    }
+
+    .table-wrap { overflow-x: auto; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Auto<span>Check</span> Pro</div>
+  <div class="header-nav">
+    <button class="nav-btn active" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="nav-btn" onclick="showPage('clientes')">Clientes</button>
+    <button class="nav-btn" onclick="showPage('viaturas')">Viaturas</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="search-section">
+      <h2 class="search-title">Leitura de <span>Matricula</span></h2>
+      <p class="search-sub">Insira a matricula para consultar historico completo da viatura</p>
+      <div class="matricula-input-wrap">
+        <input type="text" class="matricula-input" id="matriculaInput" placeholder="AA-00-BB" maxlength="10"
+          onkeypress="if(event.key==='Enter')searchMatricula()">
+        <button class="btn-search" onclick="searchMatricula()">Pesquisar</button>
+      </div>
+      <p class="camera-hint">Formato: AA-12-BB | Letras e numeros</p>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card"><div class="stat-value" id="st-clientes">-</div><div class="stat-label">Clientes</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-viaturas">-</div><div class="stat-label">Viaturas</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-manutencoes">-</div><div class="stat-label">Manutencoes</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-receita">-</div><div class="stat-label">Receita (EUR)</div></div>
+      <div class="stat-card"><div class="stat-value" id="st-pendente">-</div><div class="stat-label">Pendente (EUR)</div></div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-panel" id="resultPanel"></div>
+
+    <!-- Dashboard Alerts -->
+    <div class="dashboard-alerts" id="dashAlerts"></div>
+  </div>
+
+  <!-- CLIENTES -->
+  <div class="page" id="page-clientes">
+    <h2 style="margin-bottom:20px; font-weight:400;">Clientes <span style="color:#00d4aa;">Registados</span></h2>
+    <div class="table-wrap">
+      <table class="history-table" id="clientesTable">
+        <thead><tr><th>Nome</th><th>Telefone</th><th>Email</th><th>NIF</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- VIATURAS -->
+  <div class="page" id="page-viaturas">
+    <h2 style="margin-bottom:20px; font-weight:400;">Viaturas <span style="color:#00d4aa;">Registadas</span></h2>
+    <div class="table-wrap">
+      <table class="history-table" id="viaturasTable">
+        <thead><tr><th>Matricula</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>KM</th><th>Proprietario</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = "http://localhost:3001/api";
+
+// ========== NAVIGATION ==========
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  if (page === 'clientes') loadClientes();
+  if (page === 'viaturas') loadViaturas();
+}
+
+// ========== DASHBOARD ==========
+async function loadDashboard() {
+  const res = await fetch(`${API}/dashboard`);
+  const data = await res.json();
+
+  document.getElementById('st-clientes').textContent = data.total_clientes;
+  document.getElementById('st-viaturas').textContent = data.total_viaturas;
+  document.getElementById('st-manutencoes').textContent = data.total_manutencoes;
+  document.getElementById('st-receita').textContent = data.receita_total.toFixed(0);
+  document.getElementById('st-pendente').textContent = data.pendente_total.toFixed(0);
+
+  // Alerts
+  if (data.alertas_proximos.length > 0) {
+    document.getElementById('dashAlerts').innerHTML = `
+      <h3>Alertas e Agendamentos Proximos</h3>
+      ${data.alertas_proximos.map(a => `
+        <div class="alert-item atencao">
+          <span class="alert-icon">&#9888;</span>
+          <span><strong>${a.matricula}</strong> (${a.cliente_nome || 'N/A'}) - ${a.tipo}: ${a.descricao || ''} | Proxima: ${a.data_proxima || 'N/A'}</span>
+        </div>
+      `).join('')}
+    `;
+  }
+}
+
+// ========== SEARCH MATRICULA ==========
+async function searchMatricula() {
+  const input = document.getElementById('matriculaInput');
+  const mat = input.value.trim().replace(/\s/g, '');
+  if (!mat) return;
+
+  const res = await fetch(`${API}/matricula/${mat}`);
+  const data = await res.json();
+  const panel = document.getElementById('resultPanel');
+
+  if (!data.found) {
+    panel.innerHTML = `
+      <div class="not-found">
+        <h3>Matricula nao encontrada</h3>
+        <p>A matricula <strong>${mat.toUpperCase()}</strong> nao esta registada no sistema.</p>
+        <button class="btn-register" onclick="alert('Funcionalidade de registo em desenvolvimento!')">Registar Nova Viatura</button>
+      </div>`;
+    panel.classList.add('show');
+    return;
+  }
+
+  const v = data.viatura;
+  const alertIcons = { urgente: '&#128308;', atencao: '&#128992;', info: '&#128309;' };
+
+  panel.innerHTML = `
+    <!-- Vehicle -->
+    <div class="vehicle-card">
+      <div class="vehicle-header">
+        <div class="vehicle-plate">${v.matricula}</div>
+        <div class="vehicle-info">
+          <h3>${v.marca} ${v.modelo}</h3>
+          <p>Proprietario: ${v.cliente_nome || 'N/A'}</p>
+        </div>
+      </div>
+      <div class="vehicle-detail">
+        <div class="detail-item"><label>Ano</label><p>${v.ano || '-'}</p></div>
+        <div class="detail-item"><label>Cor</label><p>${v.cor || '-'}</p></div>
+        <div class="detail-item"><label>Quilometragem</label><p>${v.km ? v.km.toLocaleString() + ' km' : '-'}</p></div>
+        <div class="detail-item"><label>Registada em</label><p>${v.created_at ? new Date(v.created_at).toLocaleDateString('pt-PT') : '-'}</p></div>
+      </div>
+    </div>
+
+    <!-- Client -->
+    <div class="client-card">
+      <h4>Dados do Cliente</h4>
+      <div class="client-grid">
+        <p><span>Nome:</span> ${v.cliente_nome || '-'}</p>
+        <p><span>Telefone:</span> ${v.cliente_telefone || '-'}</p>
+        <p><span>Email:</span> ${v.cliente_email || '-'}</p>
+        <p><span>NIF:</span> ${v.cliente_nif || '-'}</p>
+      </div>
+    </div>
+
+    <!-- Insights -->
+    <div class="insights-row">
+      <div class="insight-card">
+        <div class="insight-value">${data.insights.total_gasto.toFixed(0)} &euro;</div>
+        <div class="insight-label">Total Gasto</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-value">${data.insights.total_manutencoes}</div>
+        <div class="insight-label">Manutencoes</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-value">${data.insights.ultima_visita || '-'}</div>
+        <div class="insight-label">Ultima Visita</div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    ${data.alertas.length > 0 ? `
+    <div class="alerts-section">
+      <h4>&#9888; Alertas e Recomendacoes</h4>
+      ${data.alertas.map(a => `
+        <div class="alert-item ${a.tipo}">
+          <span class="alert-icon">${alertIcons[a.tipo]}</span>
+          <span>${a.msg}</span>
+        </div>
+      `).join('')}
+    </div>` : ''}
+
+    <!-- Maintenance History -->
+    ${data.manutencoes.length > 0 ? `
+    <div class="history-section">
+      <h4>Historico de Manutencoes</h4>
+      <div class="table-wrap">
+        <table class="history-table">
+          <thead><tr><th>Data</th><th>Tipo</th><th>Descricao</th><th>KM</th><th>Valor</th><th>Estado</th></tr></thead>
+          <tbody>
+            ${data.manutencoes.map(m => `
+              <tr>
+                <td>${m.data_servico}</td>
+                <td>${m.tipo}</td>
+                <td>${m.descricao || '-'}</td>
+                <td>${m.km_atual ? m.km_atual.toLocaleString() : '-'}</td>
+                <td>${m.valor.toFixed(2)} &euro;</td>
+                <td><span class="badge ${m.estado}">${m.estado}</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>` : ''}
+
+    <!-- Invoices -->
+    ${data.faturas.length > 0 ? `
+    <div class="history-section">
+      <h4>Faturas</h4>
+      <div class="table-wrap">
+        <table class="history-table">
+          <thead><tr><th>Data</th><th>Descricao</th><th>Valor</th><th>Estado</th></tr></thead>
+          <tbody>
+            ${data.faturas.map(f => `
+              <tr>
+                <td>${f.data_fatura}</td>
+                <td>${f.descricao || '-'}</td>
+                <td>${f.valor.toFixed(2)} &euro;</td>
+                <td><span class="badge ${f.pago ? 'pago' : 'nao-pago'}">${f.pago ? 'Pago' : 'Pendente'}</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>` : ''}
+  `;
+  panel.classList.add('show');
+}
+
+// ========== CLIENTES ==========
+async function loadClientes() {
+  const res = await fetch(`${API}/clientes`);
+  const data = await res.json();
+  document.querySelector('#clientesTable tbody').innerHTML = data.map(c => `
+    <tr><td>${c.nome}</td><td>${c.telefone || '-'}</td><td>${c.email || '-'}</td><td>${c.nif || '-'}</td></tr>
+  `).join('');
+}
+
+// ========== VIATURAS ==========
+async function loadViaturas() {
+  const res = await fetch(`${API}/viaturas`);
+  const data = await res.json();
+  document.querySelector('#viaturasTable tbody').innerHTML = data.map(v => `
+    <tr>
+      <td><strong style="color:#ffd700;cursor:pointer" onclick="document.getElementById('matriculaInput').value='${v.matricula}';showPage('dashboard');searchMatricula();">${v.matricula}</strong></td>
+      <td>${v.marca || '-'}</td><td>${v.modelo || '-'}</td><td>${v.ano || '-'}</td>
+      <td>${v.km ? v.km.toLocaleString() : '-'}</td><td>${v.cliente_nome || '-'}</td>
+    </tr>
+  `).join('');
+}
+
+// Format input
+document.getElementById('matriculaInput').addEventListener('input', function(e) {
+  let val = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (val.length > 2) val = val.slice(0,2) + '-' + val.slice(2);
+  if (val.length > 5) val = val.slice(0,5) + '-' + val.slice(5);
+  if (val.length > 8) val = val.slice(0,8);
+  this.value = val;
+});
+
+// Init
+loadDashboard();
+</script>
+</body>
+</html>

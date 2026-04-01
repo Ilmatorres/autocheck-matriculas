@@ -161,7 +161,57 @@
       margin-top: 15px; padding: 12px 24px; background: #00d4aa; border: none; border-radius: 12px;
       color: #0f1117; font-weight: 600; cursor: pointer; transition: all 0.3s;
     }
-    .btn-register:hover { transform: translateY(-2px); }
+    .btn-register:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,212,170,0.3); }
+
+    /* Modal */
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 200;
+      justify-content: center; align-items: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: #1a1a2e; border: 1px solid #ffffff15; border-radius: 20px;
+      padding: 30px; width: 95%; max-width: 500px; max-height: 90vh; overflow-y: auto;
+    }
+    .modal h3 { color: #fff; margin-bottom: 20px; font-weight: 500; }
+    .modal h3 span { color: #00d4aa; }
+    .modal-section { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid #ffffff10; }
+    .modal-section h4 { color: #00d4aa; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .form-row.full { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 0.75rem; color: #ffffff55; }
+    .form-group input, .form-group select {
+      padding: 10px 14px; border: 1px solid #ffffff15; border-radius: 10px;
+      background: rgba(255,255,255,0.06); color: #fff; font-size: 0.9rem; outline: none;
+      transition: border-color 0.3s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: #00d4aa; }
+    .form-group input::placeholder { color: #ffffff33; }
+    .form-group select option { background: #1a1a2e; color: #fff; }
+    .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .btn-cancel {
+      padding: 10px 22px; border: 1px solid #ffffff20; border-radius: 10px;
+      background: transparent; color: #aaa; cursor: pointer; transition: all 0.3s;
+    }
+    .btn-cancel:hover { background: rgba(255,255,255,0.08); }
+    .btn-save {
+      padding: 10px 22px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #00d4aa, #00a885); color: #0f1117;
+      font-weight: 700; cursor: pointer; transition: all 0.3s;
+    }
+    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,212,170,0.3); }
+    .msg-success {
+      background: rgba(0,212,170,0.12); border: 1px solid rgba(0,212,170,0.3);
+      color: #00d4aa; padding: 12px 16px; border-radius: 12px; margin-top: 15px;
+      text-align: center; display: none; font-size: 0.9rem;
+    }
+    .msg-success.show { display: block; animation: fadeIn 0.3s ease; }
+
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
 
     /* Alerts Dashboard */
     .dashboard-alerts { margin-top: 30px; }
@@ -248,6 +298,57 @@
 
 </div>
 
+<!-- MODAL REGISTAR VIATURA -->
+<div class="modal-overlay" id="registerModal">
+  <div class="modal">
+    <h3>Registar Nova <span>Viatura</span></h3>
+
+    <div class="modal-section">
+      <h4>Dados do Cliente</h4>
+      <div class="form-row">
+        <div class="form-group"><label>Selecionar cliente existente</label>
+          <select id="reg-cliente-select" onchange="toggleNewClient()">
+            <option value="">-- Novo cliente --</option>
+          </select>
+        </div>
+      </div>
+      <div id="newClientFields">
+        <div class="form-row">
+          <div class="form-group"><label>Nome *</label><input type="text" id="reg-nome" placeholder="Nome completo"></div>
+          <div class="form-group"><label>Telefone</label><input type="text" id="reg-telefone" placeholder="+351 900 000 000"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="email@exemplo.com"></div>
+          <div class="form-group"><label>NIF</label><input type="text" id="reg-nif" placeholder="123456789"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section" style="border-bottom:none; margin-bottom:0; padding-bottom:0;">
+      <h4>Dados da Viatura</h4>
+      <div class="form-row">
+        <div class="form-group"><label>Matricula *</label><input type="text" id="reg-matricula" placeholder="AA-00-BB" maxlength="10"></div>
+        <div class="form-group"><label>Marca *</label><input type="text" id="reg-marca" placeholder="Ex: BMW, VW, Mercedes"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Modelo</label><input type="text" id="reg-modelo" placeholder="Ex: Serie 3, Golf"></div>
+        <div class="form-group"><label>Ano</label><input type="number" id="reg-ano" placeholder="2024"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Cor</label><input type="text" id="reg-cor" placeholder="Ex: Preto, Branco"></div>
+        <div class="form-group"><label>Quilometragem</label><input type="number" id="reg-km" placeholder="0"></div>
+      </div>
+    </div>
+
+    <div class="msg-success" id="regSuccess">Viatura registada com sucesso!</div>
+
+    <div class="modal-buttons">
+      <button class="btn-cancel" onclick="closeRegisterModal()">Cancelar</button>
+      <button class="btn-save" onclick="submitRegister()">Registar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const API = "http://localhost:3001/api";
 
@@ -302,7 +403,7 @@ async function searchMatricula() {
       <div class="not-found">
         <h3>Matricula nao encontrada</h3>
         <p>A matricula <strong>${mat.toUpperCase()}</strong> nao esta registada no sistema.</p>
-        <button class="btn-register" onclick="alert('Funcionalidade de registo em desenvolvimento!')">Registar Nova Viatura</button>
+        <button class="btn-register" onclick="openRegisterModal('${mat.toUpperCase()}')">Registar Nova Viatura</button>
       </div>`;
     panel.classList.add('show');
     return;
@@ -439,6 +540,117 @@ async function loadViaturas() {
 
 // Format input
 document.getElementById('matriculaInput').addEventListener('input', function(e) {
+  let val = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (val.length > 2) val = val.slice(0,2) + '-' + val.slice(2);
+  if (val.length > 5) val = val.slice(0,5) + '-' + val.slice(5);
+  if (val.length > 8) val = val.slice(0,8);
+  this.value = val;
+});
+
+// ========== REGISTER MODAL ==========
+async function openRegisterModal(matricula) {
+  // Load clients for dropdown
+  const res = await fetch(`${API}/clientes`);
+  const clientes = await res.json();
+  const select = document.getElementById('reg-cliente-select');
+  select.innerHTML = '<option value="">-- Novo cliente --</option>' +
+    clientes.map(c => `<option value="${c.id}">${c.nome} (${c.nif || 'sem NIF'})</option>`).join('');
+
+  // Pre-fill matricula if provided
+  if (matricula) {
+    document.getElementById('reg-matricula').value = matricula;
+  }
+
+  document.getElementById('regSuccess').classList.remove('show');
+  document.getElementById('registerModal').classList.add('show');
+}
+
+function closeRegisterModal() {
+  document.getElementById('registerModal').classList.remove('show');
+  // Clear form
+  ['reg-nome','reg-telefone','reg-email','reg-nif','reg-matricula','reg-marca','reg-modelo','reg-ano','reg-cor','reg-km'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('reg-cliente-select').value = '';
+  document.getElementById('newClientFields').style.display = 'block';
+}
+
+function toggleNewClient() {
+  const selected = document.getElementById('reg-cliente-select').value;
+  document.getElementById('newClientFields').style.display = selected ? 'none' : 'block';
+}
+
+async function submitRegister() {
+  const matricula = document.getElementById('reg-matricula').value.trim();
+  const marca = document.getElementById('reg-marca').value.trim();
+
+  if (!matricula || !marca) {
+    alert('Matricula e Marca sao obrigatorios!');
+    return;
+  }
+
+  let clienteId = document.getElementById('reg-cliente-select').value;
+
+  // Create new client if needed
+  if (!clienteId) {
+    const nome = document.getElementById('reg-nome').value.trim();
+    if (!nome) {
+      alert('Nome do cliente e obrigatorio!');
+      return;
+    }
+
+    const clienteRes = await fetch(`${API}/clientes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome,
+        telefone: document.getElementById('reg-telefone').value.trim(),
+        email: document.getElementById('reg-email').value.trim(),
+        nif: document.getElementById('reg-nif').value.trim()
+      })
+    });
+    const cliente = await clienteRes.json();
+    if (cliente.error) { alert('Erro ao criar cliente: ' + cliente.error); return; }
+    clienteId = cliente.id;
+  }
+
+  // Create vehicle
+  const viaturaRes = await fetch(`${API}/viaturas`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      matricula,
+      marca,
+      modelo: document.getElementById('reg-modelo').value.trim(),
+      ano: document.getElementById('reg-ano').value || null,
+      cor: document.getElementById('reg-cor').value.trim(),
+      km: document.getElementById('reg-km').value || 0,
+      cliente_id: clienteId
+    })
+  });
+  const viatura = await viaturaRes.json();
+  if (viatura.error) { alert('Erro: ' + viatura.error); return; }
+
+  // Show success
+  document.getElementById('regSuccess').classList.add('show');
+
+  // Reload dashboard and close after delay
+  loadDashboard();
+  setTimeout(() => {
+    closeRegisterModal();
+    // Search the new plate
+    document.getElementById('matriculaInput').value = matricula;
+    searchMatricula();
+  }, 1500);
+}
+
+// Close modal on overlay click
+document.getElementById('registerModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeRegisterModal();
+});
+
+// Format matricula in register form
+document.getElementById('reg-matricula').addEventListener('input', function() {
   let val = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
   if (val.length > 2) val = val.slice(0,2) + '-' + val.slice(2);
   if (val.length > 5) val = val.slice(0,5) + '-' + val.slice(5);

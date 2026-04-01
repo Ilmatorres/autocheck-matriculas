@@ -231,6 +231,72 @@
     }
 
     .table-wrap { overflow-x: auto; }
+
+    /* Notifications Page */
+    .notif-controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    .btn-notify-all {
+      padding: 10px 22px; background: linear-gradient(135deg, #25d366, #128c7e); border: none;
+      border-radius: 12px; color: #fff; font-weight: 600; cursor: pointer; transition: all 0.3s;
+    }
+    .btn-notify-all:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37,211,102,0.3); }
+    .notif-card {
+      background: rgba(255,255,255,0.04); border: 1px solid #ffffff10; border-radius: 16px;
+      padding: 20px; margin-bottom: 12px; transition: all 0.3s;
+    }
+    .notif-card:hover { border-color: #ffffff25; }
+    .notif-card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .notif-card-left { display: flex; align-items: center; gap: 14px; }
+    .notif-plate {
+      background: #ffd700; color: #000; font-weight: 800; letter-spacing: 2px;
+      padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; border: 2px solid #333;
+    }
+    .notif-client { color: #fff; font-weight: 500; }
+    .notif-client small { color: #ffffff44; font-weight: 400; display: block; margin-top: 2px; }
+    .notif-alerts { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+    .notif-alert-line {
+      font-size: 0.85rem; padding: 6px 12px; border-radius: 8px; display: flex; align-items: center; gap: 8px;
+    }
+    .notif-alert-line.urgente { background: rgba(255,77,77,0.1); color: #ff6b6b; }
+    .notif-alert-line.atencao { background: rgba(255,193,7,0.1); color: #ffc107; }
+    .notif-alert-line.info { background: rgba(0,148,255,0.1); color: #42a5f5; }
+    .notif-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-whatsapp {
+      padding: 8px 16px; background: #25d366; border: none; border-radius: 10px;
+      color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.3s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-whatsapp:hover { background: #1da851; transform: translateY(-1px); }
+    .btn-sms {
+      padding: 8px 16px; background: rgba(66,165,245,0.2); border: 1px solid rgba(66,165,245,0.3);
+      border-radius: 10px; color: #42a5f5; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.3s;
+    }
+    .btn-sms:hover { background: #42a5f5; color: #fff; }
+    .btn-email-notif {
+      padding: 8px 16px; background: rgba(124,92,252,0.2); border: 1px solid rgba(124,92,252,0.3);
+      border-radius: 10px; color: #b8a4ff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.3s;
+    }
+    .btn-email-notif:hover { background: #7c5cfc; color: #fff; }
+    .notif-sent {
+      font-size: 0.75rem; color: #00d4aa; padding: 4px 10px; background: rgba(0,212,170,0.1);
+      border-radius: 20px; display: none; align-items: center; gap: 4px;
+    }
+    .notif-sent.show { display: inline-flex; }
+    .log-section { margin-top: 30px; }
+    .log-section h3 { color: #fff; margin-bottom: 12px; font-weight: 400; }
+    .log-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; border-bottom: 1px solid #ffffff08; font-size: 0.8rem;
+    }
+    .log-item:hover { background: rgba(255,255,255,0.03); }
+    .log-canal { padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
+    .log-canal.whatsapp { background: rgba(37,211,102,0.15); color: #25d366; }
+    .log-canal.sms { background: rgba(66,165,245,0.15); color: #42a5f5; }
+    .log-canal.email { background: rgba(124,92,252,0.15); color: #b8a4ff; }
+    .notif-empty { text-align: center; padding: 40px; color: #ffffff33; }
+    .notif-count {
+      background: #ff4d4d; color: #fff; font-size: 0.65rem; padding: 2px 6px;
+      border-radius: 10px; margin-left: 5px; font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -241,6 +307,7 @@
     <button class="nav-btn active" onclick="showPage('dashboard')">Dashboard</button>
     <button class="nav-btn" onclick="showPage('clientes')">Clientes</button>
     <button class="nav-btn" onclick="showPage('viaturas')">Viaturas</button>
+    <button class="nav-btn" onclick="showPage('notificacoes')" id="navNotif">Notificacoes<span class="notif-count" id="notifBadge" style="display:none">0</span></button>
   </div>
 </div>
 
@@ -293,6 +360,25 @@
         <thead><tr><th>Matricula</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>KM</th><th>Proprietario</th></tr></thead>
         <tbody></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- NOTIFICACOES -->
+  <div class="page" id="page-notificacoes">
+    <h2 style="margin-bottom:20px; font-weight:400;">Central de <span style="color:#00d4aa;">Notificacoes</span></h2>
+    <p style="color:#ffffff44; margin-bottom:20px; font-size:0.9rem;">Envie lembretes automaticos de manutencao para os clientes via WhatsApp, SMS ou Email.</p>
+
+    <div class="notif-controls">
+      <button class="btn-notify-all" onclick="notifyAll('whatsapp')">Enviar Todos via WhatsApp</button>
+      <button class="btn-sms" onclick="notifyAll('sms')">Enviar Todos via SMS</button>
+      <span style="color:#ffffff33; font-size:0.8rem;" id="notifTotalInfo"></span>
+    </div>
+
+    <div id="notifList"></div>
+
+    <div class="log-section">
+      <h3>Historico de <span style="color:#00d4aa;">Envios</span></h3>
+      <div id="notifLog"></div>
     </div>
   </div>
 
@@ -361,6 +447,7 @@ function showPage(page) {
 
   if (page === 'clientes') loadClientes();
   if (page === 'viaturas') loadViaturas();
+  if (page === 'notificacoes') loadNotificacoes();
 }
 
 // ========== DASHBOARD ==========
@@ -658,8 +745,159 @@ document.getElementById('reg-matricula').addEventListener('input', function() {
   this.value = val;
 });
 
+// ========== NOTIFICACOES ==========
+async function loadNotificacoes() {
+  const res = await fetch(`${API}/notificacoes`);
+  const data = await res.json();
+  const list = document.getElementById('notifList');
+
+  // Update badge
+  const badge = document.getElementById('notifBadge');
+  if (data.length > 0) {
+    badge.textContent = data.length;
+    badge.style.display = 'inline';
+  } else {
+    badge.style.display = 'none';
+  }
+
+  document.getElementById('notifTotalInfo').textContent = `${data.length} notificacao(es) pendente(s)`;
+
+  if (data.length === 0) {
+    list.innerHTML = '<div class="notif-empty"><p style="font-size:1.5rem;margin-bottom:10px;">&#9989;</p><p>Nenhuma notificacao pendente! Todas as viaturas estao em dia.</p></div>';
+    return;
+  }
+
+  list.innerHTML = data.map((n, i) => {
+    const prioIcons = { urgente: '&#128308;', atencao: '&#128992;', info: '&#128309;' };
+    return `
+      <div class="notif-card" id="notif-${i}">
+        <div class="notif-card-header">
+          <div class="notif-card-left">
+            <span class="notif-plate">${n.matricula}</span>
+            <div class="notif-client">
+              ${n.cliente_nome || 'Sem cliente'}
+              <small>${n.marca} ${n.modelo} | ${n.cliente_telefone || 'Sem telefone'}</small>
+            </div>
+          </div>
+          <div class="notif-actions">
+            ${n.cliente_telefone ? `
+              <button class="btn-whatsapp" onclick="sendWhatsApp(${i}, '${encodeComp(n.cliente_telefone)}', '${encodeComp(n.cliente_nome)}', '${encodeComp(n.matricula)}', '${encodeComp(n.tipo)}', '${encodeComp(n.data_proxima || '')}')">
+                &#128172; WhatsApp
+              </button>
+              <button class="btn-sms" onclick="sendSMS(${i}, '${encodeComp(n.cliente_telefone)}', '${encodeComp(n.cliente_nome)}', '${encodeComp(n.matricula)}', '${encodeComp(n.tipo)}')">
+                SMS
+              </button>
+            ` : '<span style="color:#ffffff33;font-size:0.8rem;">Sem telefone</span>'}
+            ${n.cliente_email ? `
+              <button class="btn-email-notif" onclick="sendEmail('${encodeComp(n.cliente_email)}', '${encodeComp(n.cliente_nome)}', '${encodeComp(n.matricula)}', '${encodeComp(n.tipo)}', '${encodeComp(n.data_proxima || '')}')">
+                Email
+              </button>
+            ` : ''}
+            <span class="notif-sent" id="sent-${i}">&#10003; Enviado</span>
+          </div>
+        </div>
+        <div class="notif-alerts">
+          ${n.alertas.map(a => `
+            <div class="notif-alert-line ${a.prioridade}">
+              <span>${prioIcons[a.prioridade]}</span> ${a.msg}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  loadNotifLog();
+}
+
+function encodeComp(str) {
+  return (str || '').replace(/'/g, "\\'").replace(/"/g, '');
+}
+
+function buildMessage(nome, matricula, tipo, dataProxima) {
+  let msg = `Ola ${nome}! Aqui e a AutoCheck Pro. `;
+  msg += `A sua viatura ${matricula} necessita de ${tipo}. `;
+  if (dataProxima) {
+    msg += `Data prevista: ${dataProxima}. `;
+  }
+  msg += `Entre em contacto connosco para agendar. Obrigado!`;
+  return msg;
+}
+
+function sendWhatsApp(idx, telefone, nome, matricula, tipo, dataProxima) {
+  const phone = telefone.replace(/[^0-9+]/g, '').replace('+', '');
+  const msg = buildMessage(nome, matricula, tipo, dataProxima);
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+
+  // Log it
+  logNotification(matricula, tipo, 'whatsapp', msg);
+  document.getElementById(`sent-${idx}`).classList.add('show');
+}
+
+function sendSMS(idx, telefone, nome, matricula, tipo) {
+  const msg = buildMessage(nome, matricula, tipo, '');
+  const url = `sms:${telefone}?body=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+
+  logNotification(matricula, tipo, 'sms', msg);
+  document.getElementById(`sent-${idx}`).classList.add('show');
+}
+
+function sendEmail(email, nome, matricula, tipo, dataProxima) {
+  const subject = `AutoCheck Pro - ${tipo} necessaria para ${matricula}`;
+  const body = buildMessage(nome, matricula, tipo, dataProxima);
+  const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.open(url, '_blank');
+
+  logNotification(matricula, tipo, 'email', body);
+}
+
+async function logNotification(matricula, tipo, canal, mensagem) {
+  await fetch(`${API}/notificacoes/log`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ viatura_matricula: matricula, tipo, canal, mensagem })
+  });
+  loadNotifLog();
+}
+
+async function loadNotifLog() {
+  const res = await fetch(`${API}/notificacoes/log`);
+  const logs = await res.json();
+  const container = document.getElementById('notifLog');
+
+  if (logs.length === 0) {
+    container.innerHTML = '<p style="color:#ffffff33;font-size:0.85rem;padding:15px;">Nenhum envio registado ainda.</p>';
+    return;
+  }
+
+  container.innerHTML = logs.map(l => `
+    <div class="log-item">
+      <div>
+        <strong style="color:#ffd700;">${l.viatura_matricula}</strong>
+        <span style="color:#ffffff55;"> - ${l.tipo}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="log-canal ${l.canal}">${l.canal.toUpperCase()}</span>
+        <span style="color:#ffffff33;">${new Date(l.enviado_em).toLocaleString('pt-PT')}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function notifyAll(canal) {
+  const btns = document.querySelectorAll(canal === 'whatsapp' ? '.btn-whatsapp' : '.btn-sms');
+  let delay = 0;
+  btns.forEach(btn => {
+    setTimeout(() => btn.click(), delay);
+    delay += 1500;
+  });
+}
+
 // Init
 loadDashboard();
+loadNotificacoes();
 </script>
 </body>
 </html>

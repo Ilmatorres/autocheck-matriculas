@@ -232,6 +232,111 @@ app.get("/api/dashboard", (req, res) => {
   });
 });
 
+// ========== NOTIFICACOES - ALERTAS AUTOMATICOS ==========
+app.get("/api/notificacoes", (req, res) => {
+  db.all(`
+    SELECT m.*, v.matricula, v.marca, v.modelo, v.km,
+           c.nome as cliente_nome, c.telefone as cliente_telefone, c.email as cliente_email, c.id as cliente_id
+    FROM manutencoes m
+    JOIN viaturas v ON m.viatura_id = v.id
+    LEFT JOIN clientes c ON v.cliente_id = c.id
+    ORDER BY m.data_proxima ASC
+  `, [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    const hoje = new Date();
+    const notificacoes = [];
+
+    rows.forEach(m => {
+      const alertas = [];
+
+      // Check by date
+      if (m.data_proxima) {
+        const proxima = new Date(m.data_proxima);
+        const diffDias = Math.ceil((proxima - hoje) / (1000 * 60 * 60 * 24));
+        if (diffDias < 0) {
+          alertas.push({ prioridade: 'urgente', msg: `${m.tipo} em ATRASO ha ${Math.abs(diffDias)} dias` });
+        } else if (diffDias <= 7) {
+          alertas.push({ prioridade: 'urgente', msg: `${m.tipo} em ${diffDias} dias` });
+        } else if (diffDias <= 30) {
+          alertas.push({ prioridade: 'atencao', msg: `${m.tipo} em ${diffDias} dias` });
+        } else if (diffDias <= 60) {
+          alertas.push({ prioridade: 'info', msg: `${m.tipo} em ${diffDias} dias` });
+        }
+      }
+
+      // Check by km
+      if (m.km_proxima && m.km) {
+        const faltam = m.km_proxima - m.km;
+        if (faltam <= 0) {
+          alertas.push({ prioridade: 'urgente', msg: `KM ultrapassado para ${m.tipo}` });
+        } else if (faltam <= 3000) {
+          alertas.push({ prioridade: 'atencao', msg: `Faltam ${faltam} km para ${m.tipo}` });
+        }
+      }
+
+      // Pending status
+      if (m.estado === 'pendente') {
+        alertas.push({ prioridade: 'urgente', msg: `${m.tipo} com estado pendente` });
+      }
+
+      if (alertas.length > 0) {
+        notificacoes.push({
+          manutencao: m,
+          matricula: m.matricula,
+          marca: m.marca,
+          modelo: m.modelo,
+          cliente_nome: m.cliente_nome,
+          cliente_telefone: m.cliente_telefone,
+          cliente_email: m.cliente_email,
+          tipo: m.tipo,
+          descricao: m.descricao,
+          data_proxima: m.data_proxima,
+          km_proxima: m.km_proxima,
+          alertas
+        });
+      }
+    });
+
+    // Sort by priority
+    const prioOrder = { urgente: 0, atencao: 1, info: 2 };
+    notificacoes.sort((a, b) => {
+      const pa = Math.min(...a.alertas.map(al => prioOrder[al.prioridade] || 3));
+      const pb = Math.min(...b.alertas.map(al => prioOrder[al.prioridade] || 3));
+      return pa - pb;
+    });
+
+    res.json(notificacoes);
+  });
+});
+
+// Log de notificacoes enviadas
+db.run(`CREATE TABLE IF NOT EXISTS notificacoes_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente_id INTEGER,
+  viatura_matricula TEXT,
+  tipo TEXT,
+  canal TEXT,
+  mensagem TEXT,
+  enviado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
+
+app.post("/api/notificacoes/log", (req, res) => {
+  const { cliente_id, viatura_matricula, tipo, canal, mensagem } = req.body;
+  db.run("INSERT INTO notificacoes_log (cliente_id, viatura_matricula, tipo, canal, mensagem) VALUES (?, ?, ?, ?, ?)",
+    [cliente_id, viatura_matricula, tipo, canal, mensagem], function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ id: this.lastID, success: true });
+    });
+});
+
+app.get("/api/notificacoes/log", (req, res) => {
+  db.all("SELECT * FROM notificacoes_log ORDER BY enviado_em DESC LIMIT 50", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
 // Servidor
 app.listen(3001, () => {
   console.log("Sistema de Matriculas rodando em http://localhost:3001");
